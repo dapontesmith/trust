@@ -39,16 +39,37 @@ mod_neighbors_dem_pres_county <- lm_robust(
     fixed_effects = vb.vf_county_code,
     clusters = vb.vf_county_code)
 
+  # democratic exposure, general trust, pres vote choice 
+mod_general_rep_pres_county <- lm_robust(data = df_twoparty, 
+                                          denisen_general ~ w.mean.r.post*vote_biden + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income,
+                                          fixed_effects = vb.vf_county_code,
+                                         clusters = vb.vf_county_code)
+  # democratic exposure, neighbors trust, pres vote choice 
+mod_neighbors_rep_pres_county <- lm_robust(
+    data = df_twoparty, denisen_neighbor ~ 
+      w.mean.r.post*vote_biden + 
+      gender + edlevel + white_non_hispanic + age + income_ordinal + 
+      non_white_prop + poverty_rate + median_income, 
+    fixed_effects = vb.vf_county_code,
+    clusters = vb.vf_county_code)
+
+
 # report the pres-vote results 
 modelsummary(
-    list("General trust" = mod_general_dem_pres_county, 
-         "Neighbors trust" = mod_neighbors_dem_pres_county),
+    list("General trust, Dem exposure" = mod_general_dem_pres_county, 
+         "Neighbors trust, Dem exposure" = mod_neighbors_dem_pres_county,
+         "General trust, Rep exposure" = mod_general_rep_pres_county,
+         "Neighbors trust, Rep exposure" = mod_neighbors_rep_pres_county),
     output = "markdown",
     stars = TRUE,
     coef_map = c(
-      "w.mean.d.post" = "Democratic exposure (weighted)", 
+      "w.mean.d.post" = "Dem exposure (weighted)", 
       "vote_biden" = "Voted Biden",
       "w.mean.d.post:vote_biden" = "Dem exposure * Voted Biden",
+      "w.mean.r.post" = "Rep exposure (weighted)",
+      "w.mean.r.post:vote_biden" = "Rep exposure * Voted Biden",
       "genderMale" = "Gender Male",
       "genderOther/Prefer not to answer" = "Gender Other",
       "edlevel" = "Education (ordinal)",
@@ -60,8 +81,8 @@ modelsummary(
       "median_income" = "Median income (blockgroup)"
       
     ),
-    add_rows = bind_rows(bind_cols("County fixed effects","Yes","Yes"),
-                      bind_cols("Std. Error Clusters","County","County")),
+    add_rows = bind_rows(bind_cols("County fixed effects","Yes","Yes", "Yes","Yes"),
+                      bind_cols("Std. Error Clusters","County","County","County","County")),
     title = "General/neighbors trust, by presidential vote and partisan exposure",
   )
 
@@ -90,14 +111,37 @@ mod_neighbors_dem_partyid_county <- lm_robust(
   clusters = vb.vf_county_code
 )
 
+# democratic exposure, general trust, two-party id 
+mod_general_rep_partyid_county <- lm_robust(
+  data = full, 
+  denisen_general ~ w.mean.r.post*democrat_id_twoparty + 
+    gender + edlevel + white_non_hispanic + age + income_ordinal + 
+    non_white_prop + poverty_rate + median_income, 
+  fixed_effects = vb.vf_county_code, 
+  clusters = vb.vf_county_code
+)
+# democratic exposure, neighbors trust, two-party id 
+mod_neighbors_rep_partyid_county <- lm_robust(
+  data = full, 
+  denisen_neighbor ~ w.mean.r.post*democrat_id_twoparty + 
+    gender + edlevel + white_non_hispanic + age + income_ordinal + 
+    non_white_prop + poverty_rate + median_income, 
+  fixed_effects = vb.vf_county_code, 
+  clusters = vb.vf_county_code
+)
+
 modelsummary(
-  list(mod_general_dem_partyid_county, 
-       mod_neighbors_dem_partyid_county), 
+  list("General trust, Dem exposure" = mod_general_dem_partyid_county, 
+       "Neighbors trust, Dem exposure" = mod_neighbors_dem_partyid_county,
+       "General trust, Rep exposure" = mod_general_rep_partyid_county,
+       "Neighbors trust, Rep exposure" = mod_neighbors_rep_partyid_county), 
   stars = TRUE,
   output = "markdown",
-  coef_map = c("w.mean.d.post" = "Democratic exposure (weighted)",
-               "democrat_id_twoparty" = "Party ID = Democrat", 
+  coef_map = c("w.mean.d.post" = "Dem exposure (weighted)",
+               "democrat_id_twoparty" = "Party ID = Dem", 
                "w.mean.d.post:democrat_id_twoparty" = "Dem exposure * Party ID = Dem", 
+               "w.mean.r.post" = "Rep exposure (weighted)",
+               "w.mean.r.post:democrat_id_twoparty" = "Rep exposure * Party ID = Dem",
                "genderMale" = "Gender Male",
                "genderOther/Prefer not to answer" = "Gender Other",
                "edlevel" = "Education (ordinal)",
@@ -107,8 +151,8 @@ modelsummary(
                "non_white_prop" = "Pct. non-white (blockgroup)",
                "poverty_rate" = "Poverty rate (blockgroup)",
                "median_income" = "Median income (blockgroup)"),
-  add_rows = bind_rows(bind_cols("County fixed effects","Yes","Yes"),
-                       bind_cols("Std. Error Clusters","County","County")),
+  add_rows = bind_rows(bind_cols("County fixed effects","Yes","Yes", "Yes","Yes"),
+                       bind_cols("Std. Error Clusters","County","County","County","County")),
   title = "General/neighbors trust, by two-party ID and partisan exposure",
 )
 ```
