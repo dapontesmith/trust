@@ -8,6 +8,7 @@ output: pdf_document
 ```{r setup, include=FALSE, warning = FALSE}
 library(tidyverse)
 library(estimatr)
+library(knitr)
 library(modelsummary)
 setwd("C:/Users/dapon/Dropbox/Harvard/trust/data")
 full <- read_csv("survey_clean/2021-recontact-with-seg-variables.csv")
@@ -155,6 +156,74 @@ modelsummary(
                        bind_cols("Std. Error Clusters","County","County","County","County")),
   title = "General/neighbors trust, by two-party ID and partisan exposure",
 )
+
+
+full_cor <- full %>% 
+  select(denisen_general, denisen_neighbor, pres_vote_2020,
+         w.mean.d.post, w.mean.r.post) %>% 
+  na.omit() 
+
+
+
+general_demexp_cor <- cor(full_cor$denisen_general, full_cor$w.mean.d.post)
+neighbor_demexp_cor <- cor(full_cor$denisen_neighbor, full_cor$w.mean.d.post)
+general_repexp_cor <- cor(full_cor$denisen_general, full_cor$w.mean.r.post)
+neighbor_repexp_cor <- cor(full_cor$denisen_neighbor, full_cor$w.mean.r.post)
+
+
+general_demexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
+                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Joe Biden"])
+neighbor_demexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
+                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Joe Biden"])
+general_repexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
+                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Joe Biden"])
+neighbor_repexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
+                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Joe Biden"])
+
+general_demexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
+                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Donald Trump"])
+neighbor_demexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
+                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Donald Trump"])
+general_repexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
+                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Donald Trump"])
+neighbor_repexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
+                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Donald Trump"])
+
+
+cbind(c("General trust vs. Dem exposure",
+        "Neighbor trust vs. Dem exposure",
+        "General trust vs. Rep exposure",
+        "Neighbor trust vs. Rep exposure",
+        "General trust vs. Dem exposure",
+        "Neighbor trust vs. Dem exposure",
+        "General trust vs. Rep exposure",
+        "Neighbor trust vs. Rep exposure",
+        "General trust vs. Dem exposure",
+        "Neighbor trust vs. Dem exposure",
+        "General trust vs. Rep exposure",
+        "Neighbor trust vs. Rep exposure"),
+      c("Full","Full","Full","Full",
+        "Dem","Dem","Dem","Dem",
+        "Rep","Rep","Rep","Rep"),
+  c(round(general_demexp_cor, 3), 
+    round(neighbor_demexp_cor, 3),
+    round(general_repexp_cor, 3), 
+    round(neighbor_repexp_cor, 3),
+    round(general_demexp_cor_dem, 3),
+    round(neighbor_demexp_cor_dem, 3),
+    round(general_repexp_cor_dem, 3),
+    round(neighbor_repexp_cor_dem, 3),
+    round(general_demexp_cor_rep, 3),
+    round(neighbor_demexp_cor_rep, 3 ),
+    round(general_repexp_cor_rep, 3),
+    round(neighbor_repexp_cor_rep, 3)
+    )) %>% 
+  as_tibble() %>% 
+  rename(Relationship = V1, 
+         Group = V2, 
+         Coefficient = V3) %>% 
+  kable()
+      
 ```
 
 \newpage
