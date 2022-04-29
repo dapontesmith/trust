@@ -173,20 +173,20 @@ neighbor_repexp_cor <- cor(full_cor$denisen_neighbor, full_cor$w.mean.r.post)
 
 general_demexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
                                 full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Joe Biden"])
-neighbor_demexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
+neighbor_demexp_cor_dem <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Joe Biden"],
                                 full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Joe Biden"])
 general_repexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
                                 full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Joe Biden"])
-neighbor_repexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
+neighbor_repexp_cor_dem <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Joe Biden"],
                                 full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Joe Biden"])
 
 general_demexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
                                 full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Donald Trump"])
-neighbor_demexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
+neighbor_demexp_cor_rep <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Donald Trump"],
                                 full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Donald Trump"])
 general_repexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
                                 full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Donald Trump"])
-neighbor_repexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
+neighbor_repexp_cor_rep <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Donald Trump"],
                                 full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Donald Trump"])
 
 
@@ -205,8 +205,8 @@ cbind(c("General trust vs. Dem exposure",
       c("Full","Full","Full","Full",
         "Dem","Dem","Dem","Dem",
         "Rep","Rep","Rep","Rep"),
-  c(round(general_demexp_cor, 3), 
-    round(neighbor_demexp_cor, 3),
+   c(round(general_demexp_cor, 3),
+     round(neighbor_demexp_cor, 3),
     round(general_repexp_cor, 3), 
     round(neighbor_repexp_cor, 3),
     round(general_demexp_cor_dem, 3),
@@ -232,9 +232,9 @@ cbind(c("General trust vs. Dem exposure",
 
 # democratic exposure, general trust, party id (with independents)
 mod_general_dem_threepartyid_county <- lm_robust(
-  data = full %>% filter(party_3 %in% c("Democrat","Republican","Independent")) %>% 
-    mutate(party_3_factor = factor(party_3, levels = c("Republican","Democrat","Independent"))), 
-  denisen_general ~ w.mean.d.post*party_3_factor + 
+  data = full %>% filter(party_5 %in% c("Democrat","Republican","Independent")) %>% 
+    mutate(party_5_factor = factor(party_5, levels = c("Republican","Democrat","Independent"))), 
+  denisen_general ~ w.mean.d.post*party_5_factor + 
     gender + edlevel + white_non_hispanic + age + income_ordinal + 
     non_white_prop + poverty_rate + median_income, 
   fixed_effects = vb.vf_county_code, 
@@ -242,9 +242,9 @@ mod_general_dem_threepartyid_county <- lm_robust(
 )
 # democratic exposure, neighbors trust, party id (with independents)
 mod_neighbors_dem_threepartyid_county <- lm_robust( 
-  data = full %>% filter(party_3 %in% c("Democrat","Republican","Independent")) %>% 
-    mutate(party_3_factor = factor(party_3, levels = c("Republican","Democrat","Independent"))),
-  denisen_neighbor ~ w.mean.d.post*party_3_factor + 
+  data = full %>% filter(party_5 %in% c("Democrat","Republican","Independent")) %>% 
+    mutate(party_5_factor = factor(party_5, levels = c("Republican","Democrat","Independent"))),
+  denisen_neighbor ~ w.mean.d.post*party_5_factor + 
     gender + edlevel + white_non_hispanic + age + income_ordinal + 
     non_white_prop + poverty_rate + median_income, 
   fixed_effects = vb.vf_county_code, 
@@ -258,10 +258,10 @@ modelsummary(
   stars = TRUE,
   output = "markdown",
   coef_map = c("w.mean.d.post" = "Democratic exposure (weighted)",
-               "party_3_factorIndependent" = "Party ID = Independent",
-               "party_3_factorDemocrat" = "Party ID = Democrat",
-               "w.mean.d.post:party_3_factorDemocrat" = "Dem exposure * Party ID = Dem",
-               "w.mean.d.post:party_3_factorIndependent" = "Dem exposure * Party ID = Ind",
+               "party_5_factorIndependent" = "Party ID = Independent",
+               "party_5_factorDemocrat" = "Party ID = Democrat",
+               "w.mean.d.post:party_5_factorDemocrat" = "Dem exposure * Party ID = Dem",
+               "w.mean.d.post:party_5_factorIndependent" = "Dem exposure * Party ID = Ind",
                "genderMale" = "Gender Male",
                "genderOther/Prefer not to answer" = "Gender Other",
                "edlevel" = "Education (ordinal)",
