@@ -10,10 +10,85 @@ library(tidyverse)
 library(estimatr)
 library(knitr)
 library(modelsummary)
+library(lfe)
 setwd("C:/Users/dapon/Dropbox/Harvard/trust/data")
 full <- read_csv("survey_clean/2021-recontact-with-seg-variables.csv")
 
 ```
+
+\section{Bivariate correlations}
+These are the bivariate correlations between the trust variables and the measures of partisan exposure. I report the correlations for the full sample and for subsets of Biden and Trump voters. 
+```{r raw_correlations, message = FALSE, echo = FALSE, warning = FALSE}
+full_cor <- full %>% 
+  select(denisen_general, denisen_neighbor, pres_vote_2020,
+         w.mean.d.post, w.mean.r.post) %>% 
+  na.omit() 
+
+
+
+general_demexp_cor <- cor(full_cor$denisen_general, full_cor$w.mean.d.post)
+neighbor_demexp_cor <- cor(full_cor$denisen_neighbor, full_cor$w.mean.d.post)
+general_repexp_cor <- cor(full_cor$denisen_general, full_cor$w.mean.r.post)
+neighbor_repexp_cor <- cor(full_cor$denisen_neighbor, full_cor$w.mean.r.post)
+
+
+general_demexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
+                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Joe Biden"])
+neighbor_demexp_cor_dem <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Joe Biden"],
+                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Joe Biden"])
+general_repexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
+                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Joe Biden"])
+neighbor_repexp_cor_dem <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Joe Biden"],
+                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Joe Biden"])
+
+general_demexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
+                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Donald Trump"])
+neighbor_demexp_cor_rep <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Donald Trump"],
+                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Donald Trump"])
+general_repexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
+                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Donald Trump"])
+neighbor_repexp_cor_rep <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Donald Trump"],
+                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Donald Trump"])
+
+
+cbind(c("General trust vs. Dem exposure",
+        "Neighbor trust vs. Dem exposure",
+        "General trust vs. Rep exposure",
+        "Neighbor trust vs. Rep exposure",
+        "General trust vs. Dem exposure",
+        "Neighbor trust vs. Dem exposure",
+        "General trust vs. Rep exposure",
+        "Neighbor trust vs. Rep exposure",
+        "General trust vs. Dem exposure",
+        "Neighbor trust vs. Dem exposure",
+        "General trust vs. Rep exposure",
+        "Neighbor trust vs. Rep exposure"),
+      c("Full","Full","Full","Full",
+        "Dem","Dem","Dem","Dem",
+        "Rep","Rep","Rep","Rep"),
+   c(round(general_demexp_cor, 3),
+     round(neighbor_demexp_cor, 3),
+    round(general_repexp_cor, 3), 
+    round(neighbor_repexp_cor, 3),
+    round(general_demexp_cor_dem, 3),
+    round(neighbor_demexp_cor_dem, 3),
+    round(general_repexp_cor_dem, 3),
+    round(neighbor_repexp_cor_dem, 3),
+    round(general_demexp_cor_rep, 3),
+    round(neighbor_demexp_cor_rep, 3 ),
+    round(general_repexp_cor_rep, 3),
+    round(neighbor_repexp_cor_rep, 3)
+    )) %>% 
+  as_tibble() %>% 
+  rename(Relationship = V1, 
+         Group = V2, 
+         Coefficient = V3) %>% 
+  kable()
+      
+```
+
+
+\section{County fixed effects}
 
 ## General trust and trust in neighbors, by 2020 vote
 
@@ -158,83 +233,20 @@ modelsummary(
 )
 
 
-full_cor <- full %>% 
-  select(denisen_general, denisen_neighbor, pres_vote_2020,
-         w.mean.d.post, w.mean.r.post) %>% 
-  na.omit() 
-
-
-
-general_demexp_cor <- cor(full_cor$denisen_general, full_cor$w.mean.d.post)
-neighbor_demexp_cor <- cor(full_cor$denisen_neighbor, full_cor$w.mean.d.post)
-general_repexp_cor <- cor(full_cor$denisen_general, full_cor$w.mean.r.post)
-neighbor_repexp_cor <- cor(full_cor$denisen_neighbor, full_cor$w.mean.r.post)
-
-
-general_demexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
-                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Joe Biden"])
-neighbor_demexp_cor_dem <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Joe Biden"],
-                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Joe Biden"])
-general_repexp_cor_dem <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Joe Biden"],
-                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Joe Biden"])
-neighbor_repexp_cor_dem <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Joe Biden"],
-                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Joe Biden"])
-
-general_demexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
-                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Donald Trump"])
-neighbor_demexp_cor_rep <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Donald Trump"],
-                                full_cor$w.mean.d.post[full_cor$pres_vote_2020 == "Donald Trump"])
-general_repexp_cor_rep <- cor(full_cor$denisen_general[full_cor$pres_vote_2020 == "Donald Trump"],
-                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Donald Trump"])
-neighbor_repexp_cor_rep <- cor(full_cor$denisen_neighbor[full_cor$pres_vote_2020 == "Donald Trump"],
-                                full_cor$w.mean.r.post[full_cor$pres_vote_2020 == "Donald Trump"])
-
-
-cbind(c("General trust vs. Dem exposure",
-        "Neighbor trust vs. Dem exposure",
-        "General trust vs. Rep exposure",
-        "Neighbor trust vs. Rep exposure",
-        "General trust vs. Dem exposure",
-        "Neighbor trust vs. Dem exposure",
-        "General trust vs. Rep exposure",
-        "Neighbor trust vs. Rep exposure",
-        "General trust vs. Dem exposure",
-        "Neighbor trust vs. Dem exposure",
-        "General trust vs. Rep exposure",
-        "Neighbor trust vs. Rep exposure"),
-      c("Full","Full","Full","Full",
-        "Dem","Dem","Dem","Dem",
-        "Rep","Rep","Rep","Rep"),
-   c(round(general_demexp_cor, 3),
-     round(neighbor_demexp_cor, 3),
-    round(general_repexp_cor, 3), 
-    round(neighbor_repexp_cor, 3),
-    round(general_demexp_cor_dem, 3),
-    round(neighbor_demexp_cor_dem, 3),
-    round(general_repexp_cor_dem, 3),
-    round(neighbor_repexp_cor_dem, 3),
-    round(general_demexp_cor_rep, 3),
-    round(neighbor_demexp_cor_rep, 3 ),
-    round(general_repexp_cor_rep, 3),
-    round(neighbor_repexp_cor_rep, 3)
-    )) %>% 
-  as_tibble() %>% 
-  rename(Relationship = V1, 
-         Group = V2, 
-         Coefficient = V3) %>% 
-  kable()
-      
 ```
+
+
+
 
 \newpage
 ## General trust and trust in neighbors, by party ID (Rep, Dem, Ind)
 ```{r three_party_id, echo = FALSE, warning = FALSE, message = FALSE}
-
+threeparty_dat <- full %>% filter(party_3 %in% c("Democrat","Republican","Independent")) %>% 
+    mutate(party_5_factor = factor(party_3, levels = c("Republican","Democrat","Independent")))
 # democratic exposure, general trust, party id (with independents)
 mod_general_dem_threepartyid_county <- lm_robust(
-  data = full %>% filter(party_5 %in% c("Democrat","Republican","Independent")) %>% 
-    mutate(party_5_factor = factor(party_5, levels = c("Republican","Democrat","Independent"))), 
-  denisen_general ~ w.mean.d.post*party_5_factor + 
+  data =  threeparty_dat, 
+  denisen_general ~ w.mean.d.post*party_3_factor + 
     gender + edlevel + white_non_hispanic + age + income_ordinal + 
     non_white_prop + poverty_rate + median_income, 
   fixed_effects = vb.vf_county_code, 
@@ -242,9 +254,8 @@ mod_general_dem_threepartyid_county <- lm_robust(
 )
 # democratic exposure, neighbors trust, party id (with independents)
 mod_neighbors_dem_threepartyid_county <- lm_robust( 
-  data = full %>% filter(party_5 %in% c("Democrat","Republican","Independent")) %>% 
-    mutate(party_5_factor = factor(party_5, levels = c("Republican","Democrat","Independent"))),
-  denisen_neighbor ~ w.mean.d.post*party_5_factor + 
+  data = threeparty_dat, 
+  denisen_neighbor ~ w.mean.d.post*party_3_factor + 
     gender + edlevel + white_non_hispanic + age + income_ordinal + 
     non_white_prop + poverty_rate + median_income, 
   fixed_effects = vb.vf_county_code, 
@@ -258,10 +269,10 @@ modelsummary(
   stars = TRUE,
   output = "markdown",
   coef_map = c("w.mean.d.post" = "Democratic exposure (weighted)",
-               "party_5_factorIndependent" = "Party ID = Independent",
-               "party_5_factorDemocrat" = "Party ID = Democrat",
-               "w.mean.d.post:party_5_factorDemocrat" = "Dem exposure * Party ID = Dem",
-               "w.mean.d.post:party_5_factorIndependent" = "Dem exposure * Party ID = Ind",
+               "party_3_factorIndependent" = "Party ID = Independent",
+               "party_3_factorRepublican" = "Party ID = Rep",
+               "w.mean.d.post:party_3_factorRepublican" = "Dem exposure * Party ID = Rep",
+               "w.mean.d.post:party_3_factorIndependent" = "Dem exposure * Party ID = Ind",
                "genderMale" = "Gender Male",
                "genderOther/Prefer not to answer" = "Gender Other",
                "edlevel" = "Education (ordinal)",
@@ -277,3 +288,217 @@ modelsummary(
 )
 
 ```
+
+
+
+
+\newpage 
+
+\section{Zip code fixed effects}
+
+I now replicate the above models, but make the fixed effects more punishing: Zip codes rather than counties. The significance mostly disappears with this set of fixed effects. 
+
+## General/neighbors trust, by  2020 vote (zip code FEs)
+```{r zip_fes, echo = FALSE, warning = FALSE, message = FALSE}
+
+# get only trump and biden voters
+df_twoparty <- full %>% 
+    filter(pres_vote_2020 %in% c("Donald Trump","Joe Biden")) %>% 
+    mutate(vote_biden = ifelse(pres_vote_2020 == "Joe Biden", 1, 0))
+  
+  # democratic exposure, general trust, pres vote choice 
+mod_general_dem_pres_zip <- felm(data = df_twoparty, 
+                                          denisen_general ~ w.mean.d.post*vote_biden + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+  # democratic exposure, neighbors trust, pres vote choice 
+mod_neighbors_dem_pres_zip <- felm(data = df_twoparty, 
+                                          denisen_neighbor ~ w.mean.d.post*vote_biden + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+  # republican exposure, general trust, pres vote choice 
+mod_general_rep_pres_zip <- felm(data = df_twoparty, 
+                                          denisen_general ~ w.mean.r.post*vote_biden + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+  # republican exposure, neighbors trust, pres vote choice 
+mod_neighbors_rep_pres_zip <- felm(data = df_twoparty, 
+                                          denisen_neighbor ~ w.mean.r.post*vote_biden + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+
+
+
+# report the pres-vote results 
+modelsummary(
+    list("General trust, Dem exposure" = mod_general_dem_pres_zip, 
+         "Neighbors trust, Dem exposure" = mod_neighbors_dem_pres_zip,
+         "General trust, Rep exposure" = mod_general_rep_pres_zip,
+         "Neighbors trust, Rep exposure" = mod_neighbors_rep_pres_zip),
+    output = "markdown",
+    stars = TRUE,
+    coef_map = c(
+      "w.mean.d.post" = "Dem exposure (weighted)", 
+      "vote_biden" = "Voted Biden",
+      "w.mean.d.post:vote_biden" = "Dem exposure * Voted Biden",
+      "w.mean.r.post" = "Rep exposure (weighted)",
+      "w.mean.r.post:vote_biden" = "Rep exposure * Voted Biden",
+      "genderMale" = "Gender Male",
+      "genderOther/Prefer not to answer" = "Gender Other",
+      "edlevel" = "Education (ordinal)",
+      "white_non_hispanic" = "White (non-Hispanic)",
+      "age" = "Age",
+      "income_ordinal" = "Income (ordinal)",
+      "non_white_prop" = "Pct. non-white (blockgroup)",
+      "poverty_rate" = "Poverty rate (blockgroup)",
+      "median_income" = "Median income (blockgroup)"
+      
+    ),
+    add_rows = bind_rows(bind_cols("ZIP fixed effects","Yes","Yes", "Yes","Yes"),
+                      bind_cols("Std. Error Clusters","ZIP","ZIP","ZIP","ZIP")),
+    title = "General/neighbors trust, by presidential vote and partisan exposure",
+  )
+```
+\newpage
+
+## General/neighbors trust, by  two-party ID (zip code FEs)
+
+
+```{r zip_fes_twoparty_id, echo = FALSE, warning = FALSE, message = FALSE}
+
+  # democratic exposure, general trust, pres vote choice 
+mod_general_dem_partyid_zip <- felm(data = df_twoparty, 
+                                          denisen_general ~ w.mean.d.post*democrat_id_twoparty + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+  # democratic exposure, neighbors trust, pres vote choice 
+mod_neighbors_dem_partyid_zip <- felm(data = df_twoparty, 
+                                          denisen_neighbor ~ w.mean.d.post*democrat_id_twoparty + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+  # republican exposure, general trust, pres vote choice 
+mod_general_rep_partyid_zip <- felm(data = df_twoparty, 
+                                          denisen_general ~ w.mean.r.post*democrat_id_twoparty + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+  # republican exposure, neighbors trust, pres vote choice 
+mod_neighbors_rep_partyid_zip <- felm(data = df_twoparty, 
+                                          denisen_neighbor ~ w.mean.r.post*democrat_id_twoparty + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+modelsummary(
+  list("General trust, Dem exposure" = mod_general_dem_partyid_zip, 
+       "Neighbors trust, Dem exposure" = mod_neighbors_dem_partyid_zip,
+       "General trust, Rep exposure" = mod_general_rep_partyid_zip,
+       "Neighbors trust, Rep exposure" = mod_neighbors_rep_partyid_zip), 
+  stars = TRUE,
+  output = "markdown",
+  coef_map = c("w.mean.d.post" = "Dem exposure (weighted)",
+               "democrat_id_twoparty" = "Party ID = Dem", 
+               "w.mean.d.post:democrat_id_twoparty" = "Dem exposure * Party ID = Dem", 
+               "w.mean.r.post" = "Rep exposure (weighted)",
+               "w.mean.r.post:democrat_id_twoparty" = "Rep exposure * Party ID = Dem",
+               "genderMale" = "Gender Male",
+               "genderOther/Prefer not to answer" = "Gender Other",
+               "edlevel" = "Education (ordinal)",
+               "white_non_hispanic" = "White (non-Hispanic)",
+               "age" = "Age",
+               "income_ordinal" = "Income (ordinal)",
+               "non_white_prop" = "Pct. non-white (blockgroup)",
+               "poverty_rate" = "Poverty rate (blockgroup)",
+               "median_income" = "Median income (blockgroup)"),
+  add_rows = bind_rows(bind_cols("Zip fixed effects","Yes","Yes", "Yes","Yes"),
+                       bind_cols("Std. Error Clusters","Zip","Zip","Zip","Zip")),
+  title = "General/neighbors trust, by two-party ID and partisan exposure",
+)
+
+
+
+```
+\newpage
+## General/neighbors trust, by  threes-party ID (zip code FEs)
+
+```{r zip_fes_threeparty, echo = FALSE, warning = FALSE, message = FALSE}
+threeparty_dat <-  full %>% filter(party_3 %in% c("Democrat","Republican","Independent")) %>% 
+    mutate(party_3_factor = factor(party_3, levels = c("Republican","Democrat","Independent"))) 
+
+  # democratic exposure, general trust, pres vote choice 
+mod_general_dem_threeparty_zip <- felm(data = threeparty_dat, 
+                                          denisen_general ~ w.mean.d.post*party_3_factor + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+  # democratic exposure, neighbors trust, pres vote choice 
+mod_neighbors_dem_threeparty_zip <- felm(data = threeparty_dat, 
+                                          denisen_neighbor ~ w.mean.d.post*party_3_factor + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+  # republican exposure, general trust, pres vote choice 
+mod_general_rep_threeparty_zip <- felm(data = threeparty_dat, 
+                                          denisen_general ~ w.mean.r.post*party_3_factor + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+  # republican exposure, neighbors trust, pres vote choice 
+mod_neighbors_rep_threeparty_zip <- felm(data = threeparty_dat, 
+                                          denisen_neighbor ~ w.mean.r.post*party_3_factor + 
+                                            gender + edlevel + white_non_hispanic + age + income_ordinal + 
+                                          non_white_prop + poverty_rate + median_income | 
+                                      vb.tsmart_zip | 0 | vb.tsmart_zip)
+
+
+
+
+
+# report the party id  results 
+modelsummary(
+    list("General trust, Dem exposure" = mod_general_dem_threeparty_zip, 
+       "Neighbors trust, Dem exposure" = mod_neighbors_dem_threeparty_zip,
+       "General trust, Rep exposure" = mod_general_rep_threeparty_zip,
+       "Neighbors trust, Rep exposure" = mod_neighbors_rep_threeparty_zip), 
+  stars = TRUE,
+  output = "markdown",
+  coef_map = c("w.mean.d.post" = "Democratic exposure (weighted)",
+               "party_3_factorIndependent" = "Party ID = Independent",
+               "party_3_factorRepublican" = "Party ID = Democrat",
+               "w.mean.d.post:party_3_factorRepublican" = "Dem exposure * Party ID = Rep",
+               "w.mean.d.post:party_3_factorIndependent" = "Dem exposure * Party ID = Ind",
+               "w.mean.r.post:party_3_factorRepublican" = "Rep exposure * Party ID = Rep",
+               "w.mean.r.post:party_3_factorIndependent" = "Rep exposure * Party ID = Ind",
+               "genderMale" = "Gender Male",
+               "genderOther/Prefer not to answer" = "Gender Other",
+               "edlevel" = "Education (ordinal)",
+               "white_non_hispanic" = "White (non-Hispanic)",
+               "age" = "Age",
+               "income_ordinal" = "Income (ordinal)",
+               "non_white_prop" = "Pct. non-white (blockgroup)",
+               "poverty_rate" = "Poverty rate (blockgroup)",
+               "median_income" = "Median income (blockgroup)"),
+  add_rows = bind_rows(bind_cols("Zip fixed effects","Yes","Yes","Yes","Yes"),
+                       bind_cols("Std. Error Clusters","Zip","Zip","Zip","Zip")),
+  title = "General/neighbors trust, by three-party ID and partisan exposure",
+)
+
+```
+
+
